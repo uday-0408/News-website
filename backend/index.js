@@ -5,6 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import routes from "./routes/user.route.js";
 import articleRoutes from "./routes/article.route.js"
+import fetchRouter from "./routes/fetch.route.js"
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json()); // Don't forget this!
-
+app.use(express.urlencoded({extended:true}))
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 // ✅ Corrected path
 app.use("/api/user", routes);
 app.use("/api/article",articleRoutes)
+app.use("/api/news",fetchRouter)
 
 app.listen(port, () => {
   connectDB();
