@@ -15,20 +15,17 @@ export default function ArticleModal({ article, onClose }) {
       const res = await axios.post(
         "http://localhost:4000/api/article/view",
         {
-          url: article.link,
+          link: article.link,
           title: article.title,
-          description: article.description,
-          content: article.content || "",
-          imageUrl: article.image_url,
-          publishedAt: article.pubDate,
-          author: article.creator,
-          source: article.source_name,
-          category: Array.isArray(article.category)
-            ? article.category[0]
-            : article.category,
-          country: Array.isArray(article.country)
-            ? article.country[0]
-            : article.country,
+          description: article.description || null,
+          image_url: article.image_url || null,
+          publishedAt: article.pubDate || null,
+          author: article.creator || null,
+          source_name: article.source_name || null,
+          source_url: article.source_url || null,
+          source_icon: article.source_icon || null,
+          category: article.category || null,
+          country: article.country || null,
         },
         { withCredentials: true }
       );
@@ -36,6 +33,19 @@ export default function ArticleModal({ article, onClose }) {
       return res.data.articleId;
     } catch (error) {
       console.error("Failed to mark article as viewed:", error);
+      console.log("Article data from ensureArticleInDatabase:",{
+          link: article.link,
+          title: article.title,
+          description: article.description || null,
+          image_url: article.image_url || null,
+          publishedAt: article.pubDate || null,
+          author: article.creator || null,
+          source_name: article.source_name || null,
+          source_url: article.source_url || null,
+          source_icon: article.source_icon || null,
+          category: article.category || null,
+          country: article.country || null,
+        })
       return null;
     }
   };

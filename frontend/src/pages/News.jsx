@@ -52,7 +52,8 @@ export default function News() {
       const res = await axios.get("http://localhost:4000/api/news/fetch", {
         params: { category, country, language, articleSize },
         withCredentials: true,
-      });
+      }); 
+      console.log("Fetched News:", res.data);
 
       if (res.data.success && res.data.articles) {
         setArticles(res.data.articles);

@@ -2,7 +2,7 @@ import axios from "axios";
 import { user as User } from "../models/User.model.js";
 import { VALID_CATEGORIES } from "../utils/sample_parameters.js";
 import { COUNTRY_CODES } from "../utils/sample_parameters.js";
-import { LANGUAGE_CODES } from "../utils/sample_parameters.js"; // optional, if you plan to use it
+import { LANGUAGE_CODES } from "../utils/sample_parameters.js"; // optional
 
 export const fetchArticles = async (req, res) => {
   try {
@@ -11,18 +11,17 @@ export const fetchArticles = async (req, res) => {
       category = "top",
       country = "in",
       articleSize = 10,
-      language = "en", // optional
+      language = "en",
     } = req.query;
 
-    // ✅ Validate category
+    // Validate
     if (!VALID_CATEGORIES.includes(category.toLowerCase())) {
       return res.status(400).json({
         success: false,
-        message: `Invalid category: "${category}". Valid categories: ${VALID_CATEGORIES.join(", ")}`,
+        message: `Invalid category: "${category}". Valid: ${VALID_CATEGORIES.join(", ")}`,
       });
     }
 
-    // ✅ Validate country
     const validCountryCodes = Object.values(COUNTRY_CODES);
     if (!validCountryCodes.includes(country.toLowerCase())) {
       return res.status(400).json({
@@ -31,7 +30,6 @@ export const fetchArticles = async (req, res) => {
       });
     }
 
-    // ✅ Optional: Validate language if you use it
     const validLangCodes = Object.values(LANGUAGE_CODES);
     if (language && !validLangCodes.includes(language.toLowerCase())) {
       return res.status(400).json({
@@ -42,10 +40,7 @@ export const fetchArticles = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
     const apiKey = process.env.API_KEY;
@@ -69,12 +64,24 @@ export const fetchArticles = async (req, res) => {
       if (!nextPageToken || results.length < 10) break;
     }
 
-    fetchedArticles = fetchedArticles.slice(0, articleSize);
+    const normalizedArticles = fetchedArticles.slice(0, articleSize).map((a) => ({
+      link: a.link || null,
+      title: a.title || "",
+      description: a.description || "",
+      image_url: a.image_url || null,
+      publishedAt: a.pubDate ? new Date(a.pubDate) : null,
+      author: a.creator ? (Array.isArray(a.creator) ? a.creator.join(", ") : a.creator) : null,
+      source_name: a.source_name || a.source_id || null,
+      source_url: a.source_url || a.link || null,
+      source_icon: a.source_icon || null,
+      category: Array.isArray(a.category) ? a.category.join(", ") : a.category || category,
+      country: Array.isArray(a.country) ? a.country.join(", ") : a.country || country,
+    }));
 
     res.status(200).json({
       success: true,
-      articles: fetchedArticles,
-      totalResults: fetchedArticles.length,
+      articles: normalizedArticles,
+      totalResults: normalizedArticles.length,
       message: "Articles fetched successfully",
     });
   } catch (error) {

@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import ArticleCard from "../shared/ArticleCard.jsx"; // adjust path as needed
-import ArticleModal from "../shared/ArticleModal.jsx"; // adjust path as needed
+import { useNavigate } from "react-router-dom";
+import ArticleCard from "../shared/ArticleCard.jsx";
+import ArticleModal from "../shared/ArticleModal.jsx";
 import "../css/ArticleModal.css";
 
 const TABS = ["profile", "bookmarks", "likes", "history"];
 
 const Profile = () => {
   const token = useMemo(() => localStorage.getItem("token"), []);
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState("profile");
   const [profile, setProfile] = useState(null);
   const [data, setData] = useState([]);
@@ -88,10 +91,7 @@ const Profile = () => {
   }
 
   const profilePicURL = profile?.profile?.profilePicture
-    ? `http://localhost:4000/${profile.profile.profilePicture.replace(
-        /\\/g,
-        "/"
-      )}`
+    ? `http://localhost:4000/${profile.profile.profilePicture.replace(/\\/g, "/")}`
     : null;
 
   return (
@@ -104,9 +104,7 @@ const Profile = () => {
         {TABS.map((tab) => (
           <button
             key={tab}
-            className={`btn ${
-              activeTab === tab ? "btn-primary" : "btn-outline-secondary"
-            } text-uppercase px-4`}
+            className={`btn ${activeTab === tab ? "btn-primary" : "btn-outline-secondary"} text-uppercase px-4`}
             onClick={() => setActiveTab(tab)}
           >
             {tab}
@@ -133,7 +131,14 @@ const Profile = () => {
               </div>
             )}
             <h4 className="mt-3">{profile.username}</h4>
+            <button
+              className="btn btn-outline-primary mt-2"
+              onClick={() => navigate("/profile/edit")}
+            >
+              ✏️ Edit Profile
+            </button>
           </div>
+
           <div className="col-md-8">
             <div className="row g-3">
               <div className="col-sm-6">
@@ -143,11 +148,10 @@ const Profile = () => {
                 <strong>Phone:</strong> <br /> {profile.phone || "N/A"}
               </div>
               <div className="col-sm-6">
-                <strong>Gender:</strong> <br />{" "}
-                {profile.profile?.gender || "N/A"}
+                <strong>Gender:</strong> <br /> {profile.profile?.gender || "N/A"}
               </div>
               <div className="col-sm-6">
-                <strong>Date of Birth:</strong> <br />{" "}
+                <strong>Date of Birth:</strong> <br />
                 {profile.profile?.dob
                   ? new Date(profile.profile.dob).toLocaleDateString()
                   : "N/A"}
@@ -161,21 +165,23 @@ const Profile = () => {
       )}
 
       {["bookmarks", "likes", "history"].includes(activeTab) && (
-        <div className={`row mt-4 ${hoveredArticle ? "blurred" : ""}`}>
-          {data.length > 0 ? (
-            data.map((article, idx) => (
-              <div key={idx} className="col-md-4 mb-4">
-                <ArticleCard article={article} onHover={setHoveredArticle} />
-              </div>
-            ))
-          ) : (
-            <div className="text-center text-muted">No articles found.</div>
-          )}
-          <ArticleModal
-            article={hoveredArticle}
-            onClose={() => setHoveredArticle(null)}
-          />
-        </div>
+        <>
+          <div className={`row mt-4 ${hoveredArticle ? "blurred" : ""}`}>
+            {data.length > 0 ? (
+              data.map((article, idx) => (
+                <div key={idx} className="col-md-4 mb-4">
+                  <ArticleCard article={article} onHover={setHoveredArticle} />
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted">No articles found.</div>
+            )}
+            <ArticleModal
+              article={hoveredArticle}
+              onClose={() => setHoveredArticle(null)}
+            />
+          </div>
+        </>
       )}
     </div>
   );

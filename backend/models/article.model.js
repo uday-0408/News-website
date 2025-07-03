@@ -4,11 +4,16 @@ const articleSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: String,
-    content: String,
 
-    // Standardized fields for frontend compatibility
-    link: { type: String, unique: true },       // Replaces `url`
-    image_url: String,                          // Replaces `imageUrl`
+    // `link` replaces `url`, allows nulls and enforces uniqueness when present
+    link: {
+      type: String,
+      unique: true,
+      sparse: true,   // allows multiple nulls
+      default: null,
+    },
+
+    image_url: String,
     publishedAt: Date,
     author: String,
 
@@ -19,7 +24,7 @@ const articleSchema = new mongoose.Schema(
     category: String,
     country: String,
 
-    // Interaction tracking
+    // User interactions
     savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     viewedBy: [
