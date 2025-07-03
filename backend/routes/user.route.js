@@ -4,6 +4,7 @@ import {
   login,
   logout,
   updateProfile,
+  getProfile,
 } from "../controllers/user.controller.js";
 
 import isAuthenticated from "../middlewares/isAuthenticated.js";
@@ -15,6 +16,7 @@ const router = express.Router();
 router.post("/register", register); // Register
 router.post("/login", login); // Login
 router.post("/logout", logout); // Logout (token clearing)
+router.get("/me", isAuthenticated, getProfile); //get user profile
 
 // PROTECTED ROUTE (Update user profile with image upload)
 router.put(

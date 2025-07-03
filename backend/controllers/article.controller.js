@@ -1,6 +1,5 @@
 import { article as Article } from "../models/article.model.js";
 import { user as User } from "../models/User.model.js";
-
 export const markArticleAsViewed = async (req, res) => {
   try {
     const {
@@ -18,6 +17,19 @@ export const markArticleAsViewed = async (req, res) => {
 
     const userId = req.id;
 
+    // 🚨 Validate URL presence
+    if (!url) {
+      return res.status(400).json({
+        message: "Article URL is required",
+        success: false,
+      });
+    }
+
+    // 🧼 Clean possible array values
+    const cleanAuthor = Array.isArray(author) ? author.join(", ") : author;
+    const cleanCategory = Array.isArray(category) ? category.join(", ") : category;
+    const cleanCountry = Array.isArray(country) ? country.join(", ") : country;
+
     let article = await Article.findOne({ url });
 
     if (!article) {
@@ -28,10 +40,10 @@ export const markArticleAsViewed = async (req, res) => {
         content,
         imageUrl,
         publishedAt: new Date(publishedAt),
-        author,
+        author: cleanAuthor,
         source,
-        category,
-        country,
+        category: cleanCategory,
+        country: cleanCountry,
         viewedBy: [{ user: userId }],
       });
     } else {
@@ -43,7 +55,6 @@ export const markArticleAsViewed = async (req, res) => {
     }
 
     const user = await User.findById(userId);
-    console.log(user)
     if (!user) {
       return res.status(404).json({ message: "User not found", success: false });
     }
@@ -69,7 +80,6 @@ export const markArticleAsViewed = async (req, res) => {
     });
   }
 };
-
 
 // LIKE / UNLIKE
 export const likeArticle = async (req, res) => {
@@ -152,5 +162,71 @@ export const bookmarkArticle = async (req, res) => {
       message: "Internal server error while bookmarking/unbookmarking",
       success: false,
     });
+  }
+};
+// GET LIKES
+export const getLikes = async (req, res) => {
+  try {
+    const user = await User.findById(req.id).populate("likedArticles");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+    res.status(200).json({
+      success: true,
+      articles: user.likedArticles,
+      message: "Liked articles fetched successfully",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching liked articles", success: false });
+  }
+};
+
+// GET BOOKMARKS
+export const getBookmarks = async (req, res) => {
+  try {
+    const user = await User.findById(req.id).populate("bookmarks");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+    res.status(200).json({
+      success: true,
+      articles: user.bookmarks,
+      message: "Bookmarked articles fetched successfully",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching bookmarked articles", success: false });
+  }
+};
+
+// GET HISTORY
+export const getHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.id).populate("history.article");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+
+    const articles = user.history.map((entry) => ({
+      ...entry.article._doc,
+      viewedAt: entry.viewedAt,
+    }));
+
+    res.status(200).json({
+      success: true,
+      articles,
+      message: "History fetched successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching history", success: false });
   }
 };

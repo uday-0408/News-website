@@ -1,18 +1,34 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/shared/Navbar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ProfilePage from "./pages/ProfilePage";
+import News from "./pages/News";
 
+function AppLayout() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === "/login" || location.pathname === "/register";
 
-function App() {
-  return (
-    <div>
-      <Navbar />
-      <div className="container mt-5">
-        <h1>Hello, world!</h1>
+  return (  
+    <>
+      {!hideNavbar && <Navbar />}
+      <div className="container mt-4">
+        <Routes>
+          <Route path="/" element={<News />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
       </div>
-    </div>
-  )
+    </>
+  );
 }
-export default App;
+
+export default function App() {
+  return (
+    <Router>
+      <AppLayout />
+    </Router>
+  );
+}
