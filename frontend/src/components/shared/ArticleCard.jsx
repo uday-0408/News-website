@@ -1,6 +1,5 @@
-// components/ArticleCard.js
 import React, { useRef } from 'react';
-import defaultImage from '../../assets/default.png' 
+import defaultImage from '../../assets/default.png';
 
 export default function ArticleCard({ article, onHover }) {
   const timerRef = useRef(null);
@@ -8,11 +7,16 @@ export default function ArticleCard({ article, onHover }) {
   const handleMouseEnter = () => {
     timerRef.current = setTimeout(() => {
       onHover(article);
-    }, 3000); // 2s delay
+    }, 3000); // 3s delay
   };
 
   const handleMouseLeave = () => {
     clearTimeout(timerRef.current);
+  };
+
+  const handleClick = () => {
+    clearTimeout(timerRef.current); // prevent double call
+    onHover(article); // open modal immediately
   };
 
   const truncate = (text, max) => {
@@ -25,14 +29,15 @@ export default function ArticleCard({ article, onHover }) {
       className="card h-100 border shadow-sm"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick} // 👈 Add this
+      style={{ cursor: 'pointer' }} // optional: make it look clickable
     >
       <img
-          src={article.image_url}
-          alt='No image available'
-          className="card-img-top"
-          style={{ height: '180px', objectFit: 'cover' }}
-        />
-      {/* {console.log('image',article.image_url)} */}
+        src={article.image_url || defaultImage}
+        alt="No image available"
+        className="card-img-top"
+        style={{ height: '180px', objectFit: 'cover' }}
+      />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title">{truncate(article.title, 700)}</h5>
         <p className="card-text text-muted small mb-1">

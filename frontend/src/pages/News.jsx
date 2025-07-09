@@ -40,23 +40,45 @@ export default function News() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [pageId, setPageId] = useState("");
+  const [nextPageId, setNextPageId] = useState("");
+  const [prevPageIds, setPrevPageIds] = useState([]);
+
   const [category, setCategory] = useState("top");
   const [country, setCountry] = useState("in");
   const [language, setLanguage] = useState("en");
   const [articleSize, setArticleSize] = useState(9);
 
-  const fetchNews = async () => {
+  const fetchNews = async (targetPageId = "", reset = false) => {
     setLoading(true);
     setError("");
+
     try {
       const res = await axios.get("http://localhost:4000/api/news/fetch", {
-        params: { category, country, language, articleSize },
+        params: {
+          category,
+          country,
+          language,
+          articleSize,
+          page_id: targetPageId,
+        },
         withCredentials: true,
-      }); 
-      console.log("Fetched News:", res.data);
+      });
 
       if (res.data.success && res.data.articles) {
         setArticles(res.data.articles);
+
+        if (
+          !reset &&
+          pageId &&
+          pageId !== targetPageId &&
+          !prevPageIds.includes(pageId)
+        ) {
+          setPrevPageIds((prev) => [...prev, pageId]);
+        }
+
+        setPageId(targetPageId);
+        setNextPageId(res.data.page_id || "");
       } else {
         setArticles([]);
         setError(res.data.message || "No articles found.");
@@ -69,26 +91,31 @@ export default function News() {
       setLoading(false);
     }
   };
-  const capitalize = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
 
+  const capitalize = (str) =>
+    str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
-  // useEffect(() => {
-  //   fetchNews();
-  // }, [category, country, language, articleSize]);
+  // Initial & filter-based load
+  useEffect(() => {
+    setPageId("");
+    setPrevPageIds([]);
+    setNextPageId("");
+    fetchNews("", true);
+  }, []);
 
   return (
     <div className={`container mt-4 ${hoveredArticle ? "blurred" : ""}`}>
-      {/* Filters and Header */}
+      {/* Filters */}
       <nav className="navbar bg-light px-3 rounded shadow-sm mb-4">
         <div className="container-fluid">
-          {/* Title */}
-          <span className="navbar-brand mb-0 h4">📰 {capitalize(category)} News</span>
-
-          {/* Button + Dropdowns */}
+          <span className="navbar-brand mb-0 h4">
+            📰 {capitalize(category)} News
+          </span>
           <div className="d-flex align-items-center flex-wrap gap-2">
-            <button className="btn btn-primary btn-sm" onClick={fetchNews}>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => fetchNews("", true)}
+            >
               Load News
             </button>
 
@@ -126,23 +153,23 @@ export default function News() {
             >
               {categoryOptions.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {capitalize(cat)}
                 </option>
               ))}
             </select>
 
-            <select
-              className="form-select form-select-sm"
+            <input
+              type="number"
+              className="form-control form-control-sm"
               style={{ width: "auto" }}
               value={articleSize}
-              onChange={(e) => setArticleSize(Number(e.target.value))}
-            >
-              {[3, 6, 9, 12, 15].map((size) => (
-                <option key={size} value={size}>
-                  Show {size}
-                </option>
-              ))}
-            </select>
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (val >- 10 && val <= 50) setArticleSize(val);
+              }}
+              min={1}
+              max={50}
+            />
           </div>
         </div>
       </nav>
@@ -163,7 +190,7 @@ export default function News() {
       {!loading && articles.length > 0 && (
         <div className="row">
           {articles.map((article, idx) => (
-            <div className="col-md-4 mb-3" key={article.article_id || idx}>
+            <div className="col-md-4 mb-3" key={article.link || idx}>
               <ArticleCard article={article} onHover={setHoveredArticle} />
             </div>
           ))}
@@ -174,6 +201,30 @@ export default function News() {
       {!loading && !error && articles.length === 0 && (
         <p className="text-center text-muted">No articles available.</p>
       )}
+
+      {/* Pagination */}
+      <div className="d-flex justify-content-center gap-3 my-4">
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={prevPageIds.length === 0}
+          onClick={() => {
+            const newPrev = [...prevPageIds];
+            const lastPage = newPrev.pop();
+            setPrevPageIds(newPrev);
+            fetchNews(lastPage || "", true);
+          }}
+        >
+          ⬅️ Previous
+        </button>
+
+        <button
+          className="btn btn-outline-primary btn-sm"
+          disabled={!nextPageId}
+          onClick={() => fetchNews(nextPageId)}
+        >
+          Next ➡️
+        </button>
+      </div>
 
       {/* Modal */}
       <ArticleModal

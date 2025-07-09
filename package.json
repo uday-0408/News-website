@@ -1,0 +1,29 @@
+{
+  "name": "news_website",
+  "version": "1.0.0",
+  "description": "This is a MERN website to view and save news articles.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm start",
+    "client": "cd frontend && npm run dev",
+    "dev": "npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uday-0408/News-website.git"
+  },
+  "author": "Uday Chauhan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uday-0408/News-website/issues"
+  },
+  "homepage": "https://github.com/uday-0408/News-website#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
