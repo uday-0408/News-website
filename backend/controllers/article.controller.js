@@ -256,3 +256,11 @@ export const getHistory = async (req, res) => {
     res.status(500).json({ message: "Error fetching history", success: false });
   }
 };
+
+export const addComment = async (req, res) => {
+try {
+  
+} catch (error) {
+  
+}
+}

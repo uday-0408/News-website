@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import routes from "./routes/user.route.js";
 import articleRoutes from "./routes/article.route.js";
 import fetchRouter from "./routes/fetch.route.js";
+import commentRoutes from "./routes/comment.route.js";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", routes);
 app.use("/api/article", articleRoutes);
 app.use("/api/news", fetchRouter);
+app.use("/api/comments", commentRoutes);
 
 app.listen(port, () => {
   connectDB();

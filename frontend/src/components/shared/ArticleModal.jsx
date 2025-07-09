@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState,useEffect  } from "react";
 import axios from "axios";
 import "../css/ArticleModal.css";
+import CommentCard from "./CommentCard"; // adjust path if needed
 
 export default function ArticleModal({ article, onClose }) {
   if (!article) return null;
@@ -8,6 +9,7 @@ export default function ArticleModal({ article, onClose }) {
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [articleId, setArticleId] = useState(null);
 
   // Helper to send /view and return articleId
   const ensureArticleInDatabase = async () => {
@@ -29,26 +31,36 @@ export default function ArticleModal({ article, onClose }) {
         },
         { withCredentials: true }
       );
-
+     
       return res.data.articleId;
     } catch (error) {
       console.error("Failed to mark article as viewed:", error);
-      console.log("Article data from ensureArticleInDatabase:",{
-          link: article.link,
-          title: article.title,
-          description: article.description || null,
-          image_url: article.image_url || null,
-          publishedAt: article.pubDate || null,
-          author: article.creator || null,
-          source_name: article.source_name || null,
-          source_url: article.source_url || null,
-          source_icon: article.source_icon || null,
-          category: article.category || null,
-          country: article.country || null,
-        })
+      console.log("Article data from ensureArticleInDatabase:", {
+        link: article.link,
+        title: article.title,
+        description: article.description || null,
+        image_url: article.image_url || null,
+        publishedAt: article.pubDate || null,
+        author: article.creator || null,
+        source_name: article.source_name || null,
+        source_url: article.source_url || null,
+        source_icon: article.source_icon || null,
+        category: article.category || null,
+        country: article.country || null,
+      });
       return null;
     }
   };
+  useEffect(() => {
+  const storeArticleAndSetId = async () => {
+    const id = await ensureArticleInDatabase();
+    if (id) {
+      setArticleId(id);
+    }
+  };
+  storeArticleAndSetId();
+}, [article]);
+
 
   const handleReadFull = async () => {
     await ensureArticleInDatabase();
@@ -190,6 +202,7 @@ export default function ArticleModal({ article, onClose }) {
             {bookmarked ? "Bookmarked" : "Bookmark"}
           </button>
         </div>
+        {articleId && <CommentCard articleId={articleId} />}
       </div>
     </div>
   );

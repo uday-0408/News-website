@@ -18,6 +18,7 @@ const isAuthenticated = (req, res, next) => {
         .json({ message: "Unauthorized access, invalid token" });
     }
     req.id = decoded.userId;
+    // req.user = user; // ✅ attach full user object
     console.log("Decoded token:", decoded);
     console.log("Assigned req.id:", req.id);
     next();
